@@ -4,9 +4,13 @@ use std::{
     path::Path,
 };
 
+use owo_colors::OwoColorize;
 use serde::{Deserialize, Serialize};
 
-use crate::{cli, constants::SERIALIZATION_FAILURE_MSG};
+use crate::{
+    cli,
+    constants::{REGISTRY_READ_FAILURE_MSG, SERIALIZATION_FAILURE_MSG},
+};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Registry {
@@ -43,7 +47,7 @@ pub fn write_to_registry(registry_path: &Path, args: cli::AddArgs) {
         .read(true)
         .write(true)
         .open("./registry.json")
-        .expect("Something went wrong while attempting to open the registry file");
+        .expect(REGISTRY_READ_FAILURE_MSG);
 
     file.write_all(json_data.as_bytes())
         .expect("Failed to write to the registry");
@@ -64,4 +68,32 @@ pub fn create_new_registry(args: cli::AddArgs) {
 
     file.write_all(json_data.as_bytes())
         .expect("Failed to write to the registry");
+}
+
+pub fn list_all_templates() {
+    let registry_path = Path::new("./registry.json");
+
+    if registry_path.exists() {
+        let registry = fs::read_to_string(registry_path).expect(REGISTRY_READ_FAILURE_MSG);
+
+        let registry: Registry = serde_json::from_str(&registry)
+            .expect("Something went wrong in trying to deserialize the registry");
+
+        let template_names: Vec<String> = registry
+            .registered_templates
+            .into_iter()
+            .map(|template| template.name)
+            .collect();
+
+        println!("{}", "Available Templates:".green());
+        for name in template_names {
+            println!("{}", name);
+        }
+    } else {
+        println!(
+            "{}",
+            "No registry has been setup yet. Run \"templater-rs help add\" for more info on how to add templates"
+                .red()
+        )
+    }
 }

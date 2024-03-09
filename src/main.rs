@@ -3,7 +3,7 @@ use std::path::Path;
 use clap::Parser;
 use cli::Cli;
 use fs_extra::{copy_items, dir::CopyOptions};
-use registry::{create_new_registry, write_to_registry};
+use registry::{create_new_registry, list_all_templates, write_to_registry};
 
 mod cli;
 mod constants;
@@ -36,6 +36,9 @@ fn main() {
             } else {
                 create_new_registry(args);
             }
+        }
+        cli::Commands::List => {
+            list_all_templates();
         }
     }
 }

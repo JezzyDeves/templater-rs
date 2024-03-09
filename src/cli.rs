@@ -16,6 +16,8 @@ pub enum Commands {
     Create(CreateArgs),
     /// Adds a new template to the registry
     Add(AddArgs),
+    /// Lists the available templates
+    List,
 }
 
 #[derive(Args)]
