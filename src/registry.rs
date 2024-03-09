@@ -79,15 +79,9 @@ pub fn list_all_templates() {
         let registry: Registry = serde_json::from_str(&registry)
             .expect("Something went wrong in trying to deserialize the registry");
 
-        let template_names: Vec<String> = registry
-            .registered_templates
-            .into_iter()
-            .map(|template| template.name)
-            .collect();
-
         println!("{}", "Available Templates:".green());
-        for name in template_names {
-            println!("{}", name);
+        for template in registry.registered_templates {
+            println!("{}", template.name);
         }
     } else {
         println!(
