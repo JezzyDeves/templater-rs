@@ -7,7 +7,7 @@ use clap::{Args, Parser, Subcommand};
 #[command(propagate_version = true)]
 pub struct Cli {
     #[command(subcommand)]
-    command: Commands,
+    pub command: Commands,
 }
 
 #[derive(Subcommand)]
@@ -17,7 +17,8 @@ pub enum Commands {
 
 #[derive(Args)]
 pub struct CreateArgs {
-    path: PathBuf,
+    pub from_path: PathBuf,
+    pub dest_path: PathBuf,
     #[arg(short, long)]
-    verbose: bool,
+    pub verbose: bool,
 }
