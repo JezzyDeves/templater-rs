@@ -1,8 +1,13 @@
+use std::path::Path;
+
 use clap::Parser;
 use cli::Cli;
 use fs_extra::{copy_items, dir::CopyOptions};
+use registry::{create_new_registry, write_to_registry};
 
 mod cli;
+mod constants;
+mod registry;
 
 fn main() {
     let cli = Cli::parse();
@@ -22,6 +27,15 @@ fn main() {
             let from_path = vec![args_path];
 
             let _ = copy_items(&from_path, args.dest_path, &options);
+        }
+        cli::Commands::Add(args) => {
+            let registry_path = Path::new("./registry.json");
+
+            if registry_path.exists() {
+                write_to_registry(registry_path, args);
+            } else {
+                create_new_registry(args);
+            }
         }
     }
 }
