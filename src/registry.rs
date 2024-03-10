@@ -4,6 +4,7 @@ use std::{
     path::Path,
 };
 
+use fs_extra::{copy_items, dir::CopyOptions};
 use owo_colors::OwoColorize;
 use serde::{Deserialize, Serialize};
 
@@ -37,9 +38,9 @@ pub fn write_to_registry(registry_path: &Path, args: cli::AddArgs) {
     let mut registry: Registry = serde_json::from_str(&registry_data)
         .expect("Something went wrong in trying to deserialize the registry");
 
-    registry
-        .registered_templates
-        .push(RegisteredTemplate { name: args.name });
+    registry.registered_templates.push(RegisteredTemplate {
+        name: args.name.clone(),
+    });
 
     let json_data = serde_json::to_string(&registry).expect(SERIALIZATION_FAILURE_MSG);
 
@@ -51,10 +52,28 @@ pub fn write_to_registry(registry_path: &Path, args: cli::AddArgs) {
 
     file.write_all(json_data.as_bytes())
         .expect("Failed to write to the registry");
+
+    let templates_location = format!("./templates/{}", args.name);
+
+    fs::create_dir_all(&templates_location).expect("Failed to create directory");
+
+    let dest_path: &Path = Path::new(templates_location.as_str());
+
+    copy_items(
+        &vec![args
+            .from_path
+            .to_str()
+            .expect("Something went wrong with the file path")],
+        dest_path,
+        &CopyOptions::new(),
+    )
+    .expect("Something went wrong while cloning the directory");
 }
 
 pub fn create_new_registry(args: cli::AddArgs) {
-    let template = RegisteredTemplate { name: args.name };
+    let template = RegisteredTemplate {
+        name: args.name.clone(),
+    };
 
     let registry = Registry::new(vec![template]);
 
@@ -68,6 +87,22 @@ pub fn create_new_registry(args: cli::AddArgs) {
 
     file.write_all(json_data.as_bytes())
         .expect("Failed to write to the registry");
+
+    let templates_location = format!("./templates/{}", args.name);
+
+    fs::create_dir_all(&templates_location).expect("Failed to create directory");
+
+    let dest_path: &Path = Path::new(templates_location.as_str());
+
+    copy_items(
+        &vec![args
+            .from_path
+            .to_str()
+            .expect("Something went wrong with the file path")],
+        dest_path,
+        &CopyOptions::new(),
+    )
+    .expect("Something went wrong while cloning the directory");
 }
 
 pub fn list_all_templates() {
