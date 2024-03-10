@@ -13,19 +13,11 @@ pub struct Cli {
 #[derive(Subcommand)]
 pub enum Commands {
     /// Clones files to dest_path
-    Create(CreateArgs),
+    Create,
     /// Adds a new template to the registry
     Add(AddArgs),
     /// Lists the available templates
     List,
-}
-
-#[derive(Args)]
-pub struct CreateArgs {
-    pub from_path: PathBuf,
-    pub dest_path: PathBuf,
-    #[arg(short, long)]
-    pub verbose: bool,
 }
 #[derive(Args)]
 pub struct AddArgs {
