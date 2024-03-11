@@ -38,6 +38,16 @@ pub fn write_to_registry(registry_path: &Path, args: cli::AddArgs) {
     let mut registry: Registry = serde_json::from_str(&registry_data)
         .expect("Something went wrong in trying to deserialize the registry");
 
+    let registry_contains_name = registry
+        .registered_templates
+        .iter()
+        .find(|template| template.name == args.name)
+        .is_some();
+
+    if registry_contains_name {
+        panic!("The name {} is taken", args.name)
+    }
+
     registry.registered_templates.push(RegisteredTemplate {
         name: args.name.clone(),
     });
