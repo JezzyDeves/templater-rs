@@ -16,7 +16,7 @@ fn main() {
 
     match cli.command {
         cli::Commands::Create => {
-            let registry_path = Path::new("./registry.json");
+            let registry_path = Path::new("./registry/registry.json");
 
             if !registry_path.exists() {
                 println!("{}", "The registry doesn't exist yet. Run \"templater-rs help add\" for instructions on how to add new templates to the registry".red());
@@ -61,7 +61,7 @@ fn main() {
                 .expect("Something went wrong while copying files");
         }
         cli::Commands::Add(args) => {
-            let registry_path = Path::new("./registry.json");
+            let registry_path = Path::new("./registry/registry.json");
 
             if registry_path.exists() {
                 write_to_registry(registry_path, args);

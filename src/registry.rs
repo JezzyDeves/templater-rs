@@ -57,13 +57,13 @@ pub fn write_to_registry(registry_path: &Path, args: cli::AddArgs) {
     let mut file = OpenOptions::new()
         .read(true)
         .write(true)
-        .open("./registry.json")
+        .open("./registry/registry.json")
         .expect(REGISTRY_READ_FAILURE_MSG);
 
     file.write_all(json_data.as_bytes())
         .expect("Failed to write to the registry");
 
-    let templates_location = format!("./templates/{}", args.name);
+    let templates_location = format!("./registry/templates/{}", args.name);
 
     fs::create_dir_all(&templates_location).expect("Failed to create directory");
 
@@ -89,16 +89,18 @@ pub fn create_new_registry(args: cli::AddArgs) {
 
     let json_data = serde_json::to_string(&registry).expect(SERIALIZATION_FAILURE_MSG);
 
+    let _ = fs::create_dir("./registry");
+
     let mut file = OpenOptions::new()
         .write(true)
         .create(true)
-        .open("./registry.json")
+        .open("./registry/registry.json")
         .expect("Something went wrong while attempting to open the registry file");
 
     file.write_all(json_data.as_bytes())
         .expect("Failed to write to the registry");
 
-    let templates_location = format!("./templates/{}", args.name);
+    let templates_location = format!("./registry/templates/{}", args.name);
 
     fs::create_dir_all(&templates_location).expect("Failed to create directory");
 
@@ -116,7 +118,7 @@ pub fn create_new_registry(args: cli::AddArgs) {
 }
 
 pub fn list_all_templates() {
-    let registry_path = Path::new("./registry.json");
+    let registry_path = Path::new("./registry/registry.json");
 
     if registry_path.exists() {
         let registry = fs::read_to_string(registry_path).expect(REGISTRY_READ_FAILURE_MSG);
