@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use clap::{Args, Parser, Subcommand};
 
 #[derive(Parser)]
-#[command(version = "a0.1.0")]
+#[command(version = "a0.2.0")]
 #[command(propagate_version = true)]
 pub struct Cli {
     #[command(subcommand)]
