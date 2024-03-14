@@ -1,11 +1,15 @@
-use std::{fs, path::Path, process::exit};
+use std::{
+    fs::{self, OpenOptions},
+    io::Write,
+    path::Path,
+};
 
 use clap::Parser;
 use cli::Cli;
+use constants::SERIALIZATION_FAILURE_MSG;
 use dialoguer::{Input, Select};
 use fs_extra::{copy_items, dir::CopyOptions};
-use owo_colors::OwoColorize;
-use registry::{create_new_registry, list_all_templates, write_to_registry, Registry};
+use registry::{create_new_registry, list_all_templates, validate_registry, write_to_registry};
 
 mod cli;
 mod constants;
@@ -16,23 +20,7 @@ fn main() {
 
     match cli.command {
         cli::Commands::Create => {
-            let registry_path = Path::new("./registry/registry.json");
-
-            if !registry_path.exists() {
-                println!("{}", "The registry doesn't exist yet. Run \"templater-rs help add\" for instructions on how to add new templates to the registry".red());
-                exit(1);
-            }
-
-            let registry_data = fs::read_to_string(registry_path)
-                .expect("Something went wrong while attempting to read the registry");
-
-            let registry: Registry = serde_json::from_str(&registry_data)
-                .expect("Something went wrong in trying to deserialize the registry");
-
-            if registry.registered_templates.len() == 0 {
-                println!("{}", "The registry exists but somehow there are no templates. Run \"templater-rs help add\" for instructions on how to add new templates to the registry".red());
-                exit(1);
-            }
+            let registry = validate_registry();
 
             let items: Vec<String> = registry
                 .registered_templates
@@ -71,6 +59,41 @@ fn main() {
         }
         cli::Commands::List => {
             list_all_templates();
+        }
+        cli::Commands::Remove => {
+            let mut registry = validate_registry();
+
+            let items: &Vec<&String> = &registry
+                .registered_templates
+                .iter()
+                .map(|template| &template.name)
+                .collect();
+
+            let selection = Select::new()
+                .with_prompt("What template would you like to remove?")
+                .items(&items)
+                .interact()
+                .unwrap();
+
+            let template_path_string = format!("./registry/templates/{}", items[selection]);
+            let template_path = Path::new(&template_path_string);
+
+            registry.registered_templates.remove(selection);
+
+            let json_data = serde_json::to_string(&registry).expect(SERIALIZATION_FAILURE_MSG);
+
+            let mut file = OpenOptions::new()
+                .write(true)
+                .create(true)
+                .truncate(true)
+                .open("./registry/registry.json")
+                .expect("Something went wrong while attempting to open the registry file");
+
+            file.write_all(json_data.as_bytes())
+                .expect("Failed to write to the registry");
+
+            fs::remove_dir_all(template_path)
+                .expect("Something went wrong while trying to remove the template");
         }
     }
 }

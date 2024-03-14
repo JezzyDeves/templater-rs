@@ -18,6 +18,8 @@ pub enum Commands {
     Add(AddArgs),
     /// Lists the available templates
     List,
+    /// Removes a template
+    Remove,
 }
 #[derive(Args)]
 pub struct AddArgs {

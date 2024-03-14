@@ -2,6 +2,7 @@ use std::{
     fs::{self, OpenOptions},
     io::Write,
     path::Path,
+    process::exit,
 };
 
 use fs_extra::{copy_items, dir::CopyOptions};
@@ -57,6 +58,7 @@ pub fn write_to_registry(registry_path: &Path, args: cli::AddArgs) {
     let mut file = OpenOptions::new()
         .read(true)
         .write(true)
+        .truncate(true)
         .open("./registry/registry.json")
         .expect(REGISTRY_READ_FAILURE_MSG);
 
@@ -137,4 +139,26 @@ pub fn list_all_templates() {
                 .red()
         )
     }
+}
+
+pub fn validate_registry() -> Registry {
+    let registry_path = Path::new("./registry/registry.json");
+
+    if !registry_path.exists() {
+        println!("{}", "The registry doesn't exist yet. Run \"templater-rs help add\" for instructions on how to add new templates to the registry".red());
+        exit(1);
+    }
+
+    let registry_data = fs::read_to_string(registry_path)
+        .expect("Something went wrong while attempting to read the registry");
+
+    let registry: Registry = serde_json::from_str(&registry_data)
+        .expect("Something went wrong in trying to deserialize the registry");
+
+    if registry.registered_templates.len() == 0 {
+        println!("{}", "The registry exists but somehow there are no templates. Run \"templater-rs help add\" for instructions on how to add new templates to the registry".red());
+        exit(1);
+    }
+
+    registry
 }
