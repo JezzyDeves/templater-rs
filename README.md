@@ -1,4 +1,4 @@
-# Templater-rs
+# Templater-rs [![Rust](https://github.com/JezzyDeves/templater-rs/actions/workflows/rust.yml/badge.svg)](https://github.com/JezzyDeves/templater-rs/actions/workflows/rust.yml)
 
 ## About
 
