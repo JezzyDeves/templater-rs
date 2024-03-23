@@ -11,7 +11,7 @@ Make sure you install the program into its own folder to avoid conflicts with ot
 First add a template
 
 ```
-templater-rs add ./path/to/template/folder
+templater-rs add ./path/to/template/folder NameOfTemplate
 ```
 
 Then run the create command
