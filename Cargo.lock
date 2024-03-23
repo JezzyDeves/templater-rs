@@ -303,7 +303,7 @@ dependencies = [
 
 [[package]]
 name = "templater-rs"
-version = "0.0.1"
+version = "1.0.0"
 dependencies = [
  "clap",
  "dialoguer",
