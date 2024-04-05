@@ -5,13 +5,14 @@ use std::{
     process::exit,
 };
 
-use fs_extra::{copy_items, dir::CopyOptions};
 use owo_colors::OwoColorize;
 use serde::{Deserialize, Serialize};
+use walkdir::WalkDir;
 
 use crate::{
     cli,
     constants::{REGISTRY_READ_FAILURE_MSG, SERIALIZATION_FAILURE_MSG},
+    fs_utils::copy_dir,
 };
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -71,15 +72,15 @@ pub fn write_to_registry(registry_path: &Path, args: cli::AddArgs) {
 
     let dest_path: &Path = Path::new(templates_location.as_str());
 
-    copy_items(
-        &vec![args
-            .from_path
-            .to_str()
-            .expect("Something went wrong with the file path")],
-        dest_path,
-        &CopyOptions::new(),
-    )
-    .expect("Something went wrong while cloning the directory");
+    let total_files = WalkDir::new(&args.from_path).into_iter().count() - 1;
+    let mut completed = 0;
+
+    if !&args.from_path.is_dir() {
+        panic!("Source must be a directory")
+    }
+
+    copy_dir(&args.from_path, dest_path, &mut completed, total_files)
+        .expect("Something went wrong while copying files")
 }
 
 pub fn create_new_registry(args: cli::AddArgs) {
@@ -108,15 +109,15 @@ pub fn create_new_registry(args: cli::AddArgs) {
 
     let dest_path: &Path = Path::new(templates_location.as_str());
 
-    copy_items(
-        &vec![args
-            .from_path
-            .to_str()
-            .expect("Something went wrong with the file path")],
-        dest_path,
-        &CopyOptions::new(),
-    )
-    .expect("Something went wrong while cloning the directory");
+    let total_files = WalkDir::new(&args.from_path).into_iter().count() - 1;
+    let mut completed = 0;
+
+    if !&args.from_path.is_dir() {
+        panic!("Source must be a directory")
+    }
+
+    copy_dir(&args.from_path, dest_path, &mut completed, total_files)
+        .expect("Something went wrong while copying files")
 }
 
 pub fn list_all_templates() {
