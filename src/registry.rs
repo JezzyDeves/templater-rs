@@ -5,6 +5,7 @@ use std::{
     process::exit,
 };
 
+use git2::Repository;
 use owo_colors::OwoColorize;
 use serde::{Deserialize, Serialize};
 use walkdir::WalkDir;
@@ -75,12 +76,16 @@ pub fn write_to_registry(registry_path: &Path, args: cli::AddArgs) {
     let total_files = WalkDir::new(&args.from_path).into_iter().count() - 1;
     let mut completed = 0;
 
-    if !&args.from_path.is_dir() {
+    if !args.git && !&args.from_path.is_dir() {
         panic!("Source must be a directory")
     }
 
-    copy_dir(&args.from_path, dest_path, &mut completed, total_files)
-        .expect("Something went wrong while copying files")
+    if !args.git {
+        copy_dir(&args.from_path, dest_path, &mut completed, total_files)
+            .expect("Something went wrong while copying files")
+    } else {
+        clone_repo(args, dest_path);
+    }
 }
 
 pub fn create_new_registry(args: cli::AddArgs) {
@@ -112,12 +117,28 @@ pub fn create_new_registry(args: cli::AddArgs) {
     let total_files = WalkDir::new(&args.from_path).into_iter().count() - 1;
     let mut completed = 0;
 
-    if !&args.from_path.is_dir() {
+    if !args.git && !&args.from_path.is_dir() {
         panic!("Source must be a directory")
     }
 
-    copy_dir(&args.from_path, dest_path, &mut completed, total_files)
-        .expect("Something went wrong while copying files")
+    if !args.git {
+        copy_dir(&args.from_path, dest_path, &mut completed, total_files)
+            .expect("Something went wrong while copying files")
+    } else {
+        clone_repo(args, dest_path);
+    }
+}
+
+fn clone_repo(args: cli::AddArgs, dest_path: &Path) {
+    println!("Cloning repository");
+    Repository::clone(
+        args.from_path
+            .to_str()
+            .expect("Error converting from path to str"),
+        dest_path,
+    )
+    .expect("Error cloning repository");
+    println!("{}", "Done".green());
 }
 
 pub fn list_all_templates() {

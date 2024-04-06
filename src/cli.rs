@@ -25,4 +25,6 @@ pub enum Commands {
 pub struct AddArgs {
     pub from_path: PathBuf,
     pub name: String,
+    #[arg(short, long)]
+    pub git: bool,
 }
