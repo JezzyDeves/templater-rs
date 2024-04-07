@@ -1,20 +1,8 @@
-use std::{
-    fs,
-    io::{self, stdout},
-    path::Path,
-};
+use std::{fs, io, path::Path};
 
-use crossterm::{
-    execute,
-    terminal::{Clear, ClearType},
-};
+use indicatif::ProgressBar;
 
-pub fn copy_dir(
-    source: &Path,
-    destination: &Path,
-    number_of_completed_files: &mut i32,
-    total_files: usize,
-) -> io::Result<()> {
+pub fn copy_dir(source: &Path, destination: &Path, progress_bar: &ProgressBar) -> io::Result<()> {
     if !destination.exists() {
         fs::create_dir_all(destination)?;
     }
@@ -26,24 +14,13 @@ pub fn copy_dir(
         let dest_path = destination.join(entry.file_name());
 
         if file_type.is_dir() {
-            update_progress(number_of_completed_files, total_files);
-            copy_dir(
-                &source_path,
-                &dest_path,
-                number_of_completed_files,
-                total_files,
-            )?;
+            progress_bar.inc(1);
+            copy_dir(&source_path, &dest_path, progress_bar)?;
         } else {
-            update_progress(number_of_completed_files, total_files);
+            progress_bar.inc(1);
             fs::copy(&source_path, &dest_path)?;
         }
     }
 
     Ok(())
-}
-
-fn update_progress(number_of_completed_files: &mut i32, total_files: usize) {
-    *number_of_completed_files += 1;
-    execute!(stdout(), Clear(ClearType::All)).unwrap();
-    println!("Progress: [{}/{}]", number_of_completed_files, total_files);
 }
