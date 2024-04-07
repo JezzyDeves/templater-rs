@@ -3,9 +3,11 @@ use std::{
     io::Write,
     path::Path,
     process::exit,
+    time::Duration,
 };
 
 use git2::Repository;
+use indicatif::ProgressBar;
 use owo_colors::OwoColorize;
 use serde::{Deserialize, Serialize};
 use walkdir::WalkDir;
@@ -74,15 +76,16 @@ pub fn write_to_registry(registry_path: &Path, args: cli::AddArgs) {
     let dest_path: &Path = Path::new(templates_location.as_str());
 
     let total_files = WalkDir::new(&args.from_path).into_iter().count() - 1;
-    let mut completed = 0;
+    let progress_bar = ProgressBar::new(total_files.try_into().unwrap());
 
     if !args.git && !&args.from_path.is_dir() {
         panic!("Source must be a directory")
     }
 
     if !args.git {
-        copy_dir(&args.from_path, dest_path, &mut completed, total_files)
-            .expect("Something went wrong while copying files")
+        copy_dir(&args.from_path, dest_path, &progress_bar)
+            .expect("Something went wrong while copying files");
+        progress_bar.finish()
     } else {
         clone_repo(args, dest_path);
     }
@@ -115,22 +118,24 @@ pub fn create_new_registry(args: cli::AddArgs) {
     let dest_path: &Path = Path::new(templates_location.as_str());
 
     let total_files = WalkDir::new(&args.from_path).into_iter().count() - 1;
-    let mut completed = 0;
+    let progress_bar = ProgressBar::new(total_files.try_into().unwrap());
 
     if !args.git && !&args.from_path.is_dir() {
         panic!("Source must be a directory")
     }
 
     if !args.git {
-        copy_dir(&args.from_path, dest_path, &mut completed, total_files)
-            .expect("Something went wrong while copying files")
+        copy_dir(&args.from_path, dest_path, &progress_bar)
+            .expect("Something went wrong while copying files");
+        progress_bar.finish()
     } else {
         clone_repo(args, dest_path);
     }
 }
 
 fn clone_repo(args: cli::AddArgs, dest_path: &Path) {
-    println!("Cloning repository");
+    let spinner = ProgressBar::new_spinner().with_message("Cloning repository");
+    spinner.enable_steady_tick(Duration::from_millis(100));
     Repository::clone(
         args.from_path
             .to_str()
@@ -138,7 +143,7 @@ fn clone_repo(args: cli::AddArgs, dest_path: &Path) {
         dest_path,
     )
     .expect("Error cloning repository");
-    println!("{}", "Done".green());
+    spinner.finish_with_message("Done")
 }
 
 pub fn list_all_templates() {

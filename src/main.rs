@@ -9,6 +9,7 @@ use cli::Cli;
 use constants::SERIALIZATION_FAILURE_MSG;
 use dialoguer::{Input, Select};
 use fs_utils::copy_dir;
+use indicatif::ProgressBar;
 use registry::{create_new_registry, list_all_templates, validate_registry, write_to_registry};
 use walkdir::WalkDir;
 
@@ -46,10 +47,11 @@ fn main() {
             let from_path = PathBuf::from(format!("./registry/templates/{}", items[selection]));
 
             let total_files = WalkDir::new(&from_path).into_iter().count() - 1;
-            let mut completed = 0;
+            let progress_bar = ProgressBar::new(total_files.try_into().unwrap());
 
-            copy_dir(&from_path, dest_path, &mut completed, total_files)
-                .expect("Something went wrong while copying files")
+            copy_dir(&from_path, dest_path, &progress_bar)
+                .expect("Something went wrong while copying files");
+            progress_bar.finish()
         }
         cli::Commands::Add(args) => {
             let registry_path = Path::new("./registry/registry.json");
